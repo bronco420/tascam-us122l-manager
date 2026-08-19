@@ -58,6 +58,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   icons to `/usr/share/`. Added README "Build your own .deb" section using a
   dedicated `-DCMAKE_INSTALL_PREFIX=/usr` build tree.
 
+### Added
+- **`--screenshot FILE`**: renders the dashboard window to a PNG (via
+  `QWidget::grab()`) and exits — used to generate `docs/screenshots/dashboard.png`
+  shown in the README and the GitHub release.
+
 ## [2.3.1] - 2026-08-16
 
 ### Fixed
