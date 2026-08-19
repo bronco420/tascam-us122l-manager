@@ -1,7 +1,7 @@
 # Tascam US-122L Manager
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Build](https://github.com/bronco/tascam-us122l-manager/actions/workflows/build.yml/badge.svg)](https://github.com/bronco/tascam-us122l-manager/actions/workflows/build.yml)
+[![Build](https://github.com/bronco420/tascam-us122l-manager/actions/workflows/build.yml/badge.svg)](https://github.com/bronco420/tascam-us122l-manager/actions/workflows/build.yml)
 
 Professional audio interface control tool for the **Tascam US-122L** on Linux.
 
