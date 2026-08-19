@@ -49,6 +49,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README/QUICKSTART no longer document non-existent `--action:*` flags.
 - Added CI build badge, Tascam asset disclaimer and roadmap section.
 
+### Packaging
+- **`.deb` had broken (root-relative) paths**: `CMAKE_INSTALL_FULL_*` were
+  undefined without `include(GNUInstallDirs)`, so files landed at
+  `/systemd/user`, `/applications`, `/lib/...` instead of FHS paths. Now the
+  systemd user unit goes to `/usr/lib/systemd/user`, autostart/launcher to
+  `/usr/lib/tascam-us122l` and `/usr/share/tascam-us122l`, desktop entry and
+  icons to `/usr/share/`. Added README "Build your own .deb" section using a
+  dedicated `-DCMAKE_INSTALL_PREFIX=/usr` build tree.
+
 ## [2.3.1] - 2026-08-16
 
 ### Fixed

@@ -75,6 +75,25 @@ sudo pacman -S cmake ninja qt6-base jack pipewire alsa-lib python
 sudo apt install cmake ninja-build qt6-base-dev libjack-jackd2-dev libpipewire-0.3-dev libasound2-dev python3
 ```
 
+### Install from .deb (Debian/Ubuntu)
+
+Download `tascam-us122l-manager-<version>.deb` from the [Releases](https://github.com/bronco420/tascam-us122l-manager/releases) page:
+
+```bash
+sudo apt install ./tascam-us122l-manager-<version>.deb
+```
+
+Installs the binary to `/usr/bin/`, the systemd user unit to `/usr/lib/systemd/user/`,
+and the desktop entry + icons to `/usr/share/`.
+
+### Build your own .deb
+
+```bash
+cmake -G Ninja -B build-deb -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTING=OFF
+cmake --build build-deb
+cd build-deb && cpack -G DEB
+```
+
 ## Usage
 
 ### GUI Mode
