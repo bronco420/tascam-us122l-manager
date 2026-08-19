@@ -1,0 +1,6 @@
+#!/bin/bash
+if [ -f "$HOME/.config/tascam-us122l/state.conf" ]; then
+    exec "$HOME/.local/bin/tascam-us122l-manager" --sysmode on --silent
+else
+    exec "$HOME/.local/bin/tascam-us122l-manager" --watch --silent
+fi

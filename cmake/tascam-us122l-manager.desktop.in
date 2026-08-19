@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Tascam US-122L Manager
+Name[it]=Tascam US-122L Manager
+Comment=Professional audio management for the Tascam US-122L
+Comment[it]=Gestione audio professionale Tascam US-122L
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/tascam-us122l-manager
+Icon=tascam-us122l
+Terminal=false
+Categories=Audio;AudioVideo;AudioVideoEditing;
+Keywords=audio;jack;tascam;usb;
+StartupNotify=true

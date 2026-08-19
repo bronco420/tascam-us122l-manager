@@ -1,0 +1,29 @@
+# Build artifacts
+build/
+build-*/
+*.o
+*.a
+*.so
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+compile_commands.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / OS
+*.swp
+*.user
+*.bak
+.DS_Store
+.idea/
+.vscode/
+
+# Project runtime files
+*.log
+*.old
+*.lock

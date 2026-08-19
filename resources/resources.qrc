@@ -1,0 +1,33 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="autostart.png">icons/autostart.png</file>
+        <file alias="bridge.png">icons/bridge.png</file>
+        <file alias="config.png">icons/config.png</file>
+        <file alias="diag.png">icons/diag.png</file>
+        <file alias="docs.png">icons/docs.png</file>
+        <file alias="info.png">icons/info.png</file>
+        <file alias="midi.png">icons/midi.png</file>
+        <file alias="miditest.png">icons/miditest.png</file>
+        <file alias="mixsrc.png">icons/mixsrc.png</file>
+        <file alias="mixup.png">icons/mixup.png</file>
+        <file alias="refresh.png">icons/refresh.png</file>
+        <file alias="restart.png">icons/restart.png</file>
+        <file alias="start.png">icons/start.png</file>
+        <file alias="stop.png">icons/stop.png</file>
+        <file alias="sysmode.png">icons/sysmode.png</file>
+        <file alias="terminal.png">icons/terminal.png</file>
+        <file alias="watch.png">icons/watch.png</file>
+        <file alias="tascam-us122l.png">icons/tascam-us122l.png</file>
+    </qresource>
+    <qresource prefix="/styles">
+        <file alias="style.qss">style.qss</file>
+    </qresource>
+    <qresource prefix="/assets">
+        <file alias="logo.jpg">logo.jpg</file>
+        <file alias="tascam_logo.svg">tascam_logo.svg</file>
+        <file alias="product/us122l_front.jpg">product/us122l_front.jpg</file>
+        <file alias="product/us122l_right3qtr.jpg">product/us122l_right3qtr.jpg</file>
+        <file alias="product/us122l_left3qtr.jpg">product/us122l_left3qtr.jpg</file>
+        <file alias="product/us122l_rear.jpg">product/us122l_rear.jpg</file>
+    </qresource>
+</RCC>

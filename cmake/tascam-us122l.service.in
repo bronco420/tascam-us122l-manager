@@ -1,0 +1,15 @@
+[Unit]
+Description=Tascam US-122L Manager
+After=pipewire.service pipewire-pulse.service
+Wants=pipewire.service pipewire-pulse.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/tascam-us122l-manager --watch --silent
+ExecStop=/usr/bin/tascam-us122l-manager --watch-stop --silent
+ExecStop=/usr/bin/tascam-us122l-manager --stop --silent
+ExecStop=/usr/bin/tascam-us122l-manager --sysmode off --silent
+
+[Install]
+WantedBy=default.target
