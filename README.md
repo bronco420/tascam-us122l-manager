@@ -9,6 +9,8 @@ Professional audio interface control tool for the **Tascam US-122L** on Linux.
 > `resources/` are property of TEAC Corporation / Tascam and are used for
 > identification purposes only. All other code is MIT-licensed.
 
+![Control panel dashboard](docs/screenshots/dashboard.png)
+
 ## Features
 
 - JACK audio server management
@@ -118,6 +120,7 @@ tascam-us122l-manager --watch            # Start watchdog
 tascam-us122l-manager --watch-stop       # Stop watchdog
 tascam-us122l-manager --autostart on|off # Enable/disable auto-start
 tascam-us122l-manager --silent           # No dialogs (for scripts/systemd)
+tascam-us122l-manager --screenshot out.png  # Render dashboard to PNG (docs)
 ```
 
 ## Architecture

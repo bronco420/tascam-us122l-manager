@@ -88,6 +88,11 @@ int main(int argc, char *argv[]) {
     QCommandLineOption silentOption("silent", "No GUI windows (for systemd/cron)");
     parser.addOption(silentOption);
 
+    QCommandLineOption screenshotOption("screenshot",
+        "Grab a screenshot of the GUI to FILE (useful for docs)",
+        "file");
+    parser.addOption(screenshotOption);
+
     parser.process(app);
 
     // Initialize core components
@@ -304,6 +309,22 @@ int main(int argc, char *argv[]) {
     // Create and show main window
     MainWindow mainWindow;
     mainWindow.show();
+
+    // Screenshot mode: render the window, then save and exit
+    if (parser.isSet("screenshot")) {
+        const QString outFile = parser.value("screenshot");
+        mainWindow.resize(1040, 680);
+        QTimer::singleShot(1200, [&]() {
+            const QPixmap pm = mainWindow.grab();
+            if (!pm.save(outFile)) {
+                std::cerr << "Failed to save screenshot to " << outFile.toStdString() << "\n";
+                qApp->exit(1);
+            } else {
+                std::cout << "Screenshot saved to " << outFile.toStdString() << "\n";
+                qApp->exit(0);
+            }
+        });
+    }
 
     // Non-blocking warning if the card is not detected
     if (!diagnostics.isCardDetected()) {
