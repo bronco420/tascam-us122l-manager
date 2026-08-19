@@ -7,6 +7,7 @@
 #include <QStyle>
 #include <QMouseEvent>
 #include <QPixmap>
+#include <QCoreApplication>
 
 // ============================= ActionCard =============================
 
@@ -169,7 +170,7 @@ DashboardWidget::DashboardWidget(QWidget* parent)
     titleBox->addWidget(sub);
     headerLayout->addLayout(titleBox, 1);
 
-    QLabel* versionChip = new QLabel("v2.3.1", header);
+    QLabel* versionChip = new QLabel(QString("v%1").arg(QCoreApplication::applicationVersion()), header);
     versionChip->setObjectName("versionChip");
     headerLayout->addWidget(versionChip);
 

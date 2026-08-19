@@ -1,13 +1,16 @@
 # Project History
 
-Chronicle of the Tascam US-122L Manager project — from the original bash
-version through the C++17 rewrite and the 2026 maintenance pass.
+Chronicle of the Tascam US-122L Manager — an original project developed from
+start to finish by **Bronco (bronco420)**. Everything here was written and
+maintained by the author by hand; no third-party code was converted or reused
+for the application itself.
 
 ## Origins
 
-The tool started as a **bash script** (`tascam-us122l-manager.sh`) wrapping
-JACK, ALSA `usb_stream`, PipeWire and `yad`-based dashboards for the Tascam
-US-122L audio interface on Linux. It grew to ~1900 lines and covered:
+Early work on the tool began as a personal **bash script**
+(`tascam-us122l-manager.sh`) for the Tascam US-122L audio interface on Linux.
+It wrapped JACK, ALSA `usb_stream`, PipeWire and `yad`-based dashboards, and
+covered:
 
 - JACK server start/stop with configurable sample rate / buffer / periods
 - PipeWire–JACK bridge
@@ -15,10 +18,11 @@ US-122L audio interface on Linux. It grew to ~1900 lines and covered:
 - Watchdog, autostart, diagnostics, MIDI loopback test
 - HTML "Control Panel" dashboard
 
-## C++17 Rewrite (2026-08-15/16)
+## Native Qt6 Application (2026-08-15/16)
 
-The bash script was fully reimplemented in **C++17 with Qt6 (Widgets)**,
-keeping 100% feature parity:
+The functionality was hand-reimplemented as a **native C++17 application with
+Qt6 (Widgets)**, written entirely from scratch by the author — not a port or
+conversion of any external project:
 
 - Modular core: `JackManager`, `PipeWireBridge`, `Sysmode`, `Mixer`,
   `Preset`, `Watchdog`, `Diagnostics`, `Config`, `Utils`
@@ -29,7 +33,7 @@ keeping 100% feature parity:
 - CLI preserved: `--start/--stop/--restart/--status/--diag/--bridge/
   --sysmode/--watch/--watch-stop/--autostart/--silent`
 
-Key fixes during the rewrite (see `CHANGELOG.md`):
+Key fixes in this phase (see `CHANGELOG.md`):
 
 - Startup hang: `Mixer` slept **seconds** instead of milliseconds
 - `--status` hang on virtual proc files

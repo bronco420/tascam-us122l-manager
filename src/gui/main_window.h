@@ -62,6 +62,7 @@ private slots:
     void onActionMidiTest();
     void onActionDocs();
     void onActionDiag();
+    void onActionAbout();
     void onActionRestart();
     void onActionOpenLog();
     void onActionOpenAsound();
@@ -127,6 +128,7 @@ private:
     QAction* m_actionMidiTest;
     QAction* m_actionDocs;
     QAction* m_actionDiag;
+    QAction* m_actionAbout;
     QAction* m_actionRestart;
     QAction* m_actionOpenLog;
     QAction* m_actionOpenAsound;

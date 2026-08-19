@@ -81,7 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3] - 2026-08-15
 
 ### Added
-- Complete C++ rewrite of the Tascam US-122L Manager
+- Native C++17/Qt6 application written from scratch (replaces the author's
+  earlier personal bash script; no third-party code converted)
 - Qt6-based GUI with modern design
 - JACK server management with proper error handling
 - PipeWire-JACK bridge implementation
@@ -95,7 +96,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation
 
 ### Changed
-- Replaced bash script with C++ application
+- Replaced the author's own bash script with a native C++ application
 - Improved performance with native C++ code
 - Better error handling and recovery
 - Enhanced GUI with Qt6 widgets

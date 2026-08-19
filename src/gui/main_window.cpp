@@ -3,6 +3,8 @@
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QMessageBox>
+#include <QCoreApplication>
+#include <QIcon>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -172,6 +174,12 @@ void MainWindow::createMenuBar() {
     m_actionDiag = new QAction("Diagnostics", this);
     connect(m_actionDiag, &QAction::triggered, this, &MainWindow::onActionDiag);
     infoMenu->addAction(m_actionDiag);
+
+    infoMenu->addSeparator();
+
+    m_actionAbout = new QAction("About", this);
+    connect(m_actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
+    infoMenu->addAction(m_actionAbout);
 
     // Debug menu
     QMenu* debugMenu = mb->addMenu("Debug");
@@ -354,6 +362,28 @@ void MainWindow::onActionDiag() {
     m_diagWidget->show();
     m_stackedWidget->setCurrentWidget(m_diagWidget);
     m_statusLabel->setText("Diagnostics");
+}
+
+void MainWindow::onActionAbout() {
+    QMessageBox box(this);
+    box.setWindowTitle("About");
+    box.setIconPixmap(QIcon(":/icons/tascam-us122l.png").pixmap(64, 64));
+    box.setText(QString("<h3>Tascam US-122L Manager %1</h3>"
+                        "<p>Professional audio interface control tool for the "
+                        "Tascam US-122L on Linux.</p>"
+                        "<p><b>Author:</b> Bronco (bronco420)</p>"
+                        "<p>Developed from scratch - no external code converted.</p>"
+                        "<p><b>License:</b> MIT - https://github.com/bronco420"
+                        "/tascam-us122l-manager</p>")
+                    .arg(QCoreApplication::applicationVersion()));
+    box.setInformativeText("Built with:\n"
+                           "- Qt " QT_VERSION_STR " (LGPL v3)\n"
+                           "- JACK Audio Connection Kit\n"
+                           "- PipeWire\n"
+                           "- ALSA usb_stream\n\n"
+                           "Product photographs and the Tascam logo are property "
+                           "of TEAC Corporation / Tascam.");
+    box.exec();
 }
 
 void MainWindow::onActionRestart() {

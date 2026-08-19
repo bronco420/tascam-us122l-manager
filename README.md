@@ -225,5 +225,13 @@ This project is licensed under the MIT License.
 
 ## Credits
 
-Original bash version: Tascam US-122L Manager v2.3
-C++ rewrite: Maintains 100% of original functionality
+Developed from scratch by **Bronco (bronco420)** — design, implementation,
+tests and documentation. No external code was converted or reused.
+
+- Qt 6 (LGPL v3) — GUI framework
+- JACK Audio Connection Kit (GPL/LGPL) — audio server
+- PipeWire (MIT) — bridge audio server
+- ALSA (LGPL) — low-level USB `usb_stream` driver
+
+Product photographs and the Tascam logo remain property of TEAC Corporation,
+used for identification purposes only.
