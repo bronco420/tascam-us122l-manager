@@ -10,6 +10,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+# Standard install locations (FHS paths for .deb packaging)
+include(GNUInstallDirs)
+
 # Options
 option(BUILD_GUI "Build GUI (Qt6)" ON)
 option(BUILD_STATIC "Build static binary" OFF)
@@ -99,35 +102,36 @@ target_link_libraries(tascam-us122l-manager
 
 # Install
 install(TARGETS tascam-us122l-manager
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 
 # Platform-specific settings
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-    # systemd integration
+    # systemd user unit (Debian FHS: /usr/lib/systemd/user)
     configure_file("${PROJECT_DIR}/cmake/tascam-us122l.service.in"
         "${CMAKE_BINARY_DIR}/tascam-us122l.service")
     install(FILES "${CMAKE_BINARY_DIR}/tascam-us122l.service"
-        DESTINATION "${CMAKE_INSTALL_FULL_SYSCONFDIR}/systemd/user")
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/systemd/user")
 endif()
 
 # Auto-start script
 configure_file("${PROJECT_DIR}/cmake/autostart.sh.in"
     "${CMAKE_BINARY_DIR}/autostart.sh")
 install(FILES "${CMAKE_BINARY_DIR}/autostart.sh"
-    DESTINATION "${CMAKE_INSTALL_FULL_LOCALSTATEDIR}/lib/tascam-us122l")
+    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/tascam-us122l")
 
 # Launcher script (subreaper for jackd)
 install(PROGRAMS "${PROJECT_DIR}/scripts/tascam-jackd-launcher.py"
-    DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/tascam-us122l")
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/tascam-us122l")
 
 # Desktop entry
 configure_file("${PROJECT_DIR}/cmake/tascam-us122l-manager.desktop.in"
     "${CMAKE_BINARY_DIR}/tascam-us122l-manager.desktop")
 install(FILES "${CMAKE_BINARY_DIR}/tascam-us122l-manager.desktop"
-    DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/applications")
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/applications")
 
-# Icons (install as tascam-us122l, no prefix)
+# Icons
 install(FILES "${PROJECT_DIR}/resources/icons/tascam-us122l.svg"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps"
     RENAME tascam-us122l.svg)
@@ -151,3 +155,20 @@ if(BUILD_TESTING)
     target_link_libraries(test_firmware PRIVATE Qt6::Core)
     add_test(NAME firmware COMMAND test_firmware)
 endif()
+
+# ============ Packaging (.deb) ============
+set(CPACK_PACKAGE_NAME "tascam-us122l-manager")
+set(CPACK_PACKAGE_VENDOR "Bronco")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "Control tool for the Tascam US-122L audio interface on Linux (JACK/PipeWire)")
+set(CPACK_PACKAGE_CONTACT "bronco420 <bronco@users.noreply.github.com>")
+set(CPACK_PACKAGE_MAINTAINER "bronco420 <bronco@users.noreply.github.com>")
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+set(CPACK_GENERATOR "DEB")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "qt6-base (>= 6.0), libjack-jackd2-0, libpipewire-0.3-0, libasound2")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_PACKAGE_SECTION "sound")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+
+include(CPack)
