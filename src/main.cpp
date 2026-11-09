@@ -24,6 +24,7 @@
 #include "core/utils.h"
 
 #include "gui/main_window.h"
+#include "theme_tokens.h"
 
 #include <iostream>
 
@@ -58,12 +59,8 @@ int main(int argc, char *argv[]) {
     app.setStyle(QStyleFactory::create("Fusion"));
     app.setWindowIcon(QIcon(":/icons/tascam-us122l.png"));
 
-    // Apply the 2026 dark theme (design tokens in resources/style.qss)
-    QFile themeFile(":/styles/style.qss");
-    if (themeFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        app.setStyleSheet(QString::fromUtf8(themeFile.readAll()));
-        themeFile.close();
-    }
+    // Apply the 2026 dark theme (design tokens in UiTheme, applied as global QSS)
+    app.setStyleSheet(UiTheme::globalQss());
 
     // Load Qt's own Italian translations so that the parser's built-in help
     // and error strings ("Utilizzo:", "Valore mancante dopo...") stay in the
@@ -366,8 +363,8 @@ int main(int argc, char *argv[]) {
     // Screenshot mode: render the window, then save and exit
     if (parser.isSet("screenshot")) {
         const QString outFile = parser.value("screenshot");
-        mainWindow.resize(1040, 680);
-        QTimer::singleShot(1200, [&]() {
+        mainWindow.resize(1180, 760);
+        QTimer::singleShot(1500, [&]() {
             const QPixmap pm = mainWindow.grab();
             if (!pm.save(outFile)) {
                 std::cerr << "Impossibile salvare lo screenshot in " << outFile.toStdString() << "\n";

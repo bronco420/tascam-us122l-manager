@@ -44,6 +44,7 @@ set(CORE_SOURCES
     "${CORE_DIR}/diagnostics.cpp"
     "${CORE_DIR}/config.cpp"
     "${CORE_DIR}/utils.cpp"
+    "${CORE_DIR}/task_runner.cpp"
 )
 
 # GUI sources
@@ -56,6 +57,11 @@ set(GUI_SOURCES
     "${GUI_DIR}/info_widget.cpp"
     "${GUI_DIR}/documentation_widget.cpp"
     "${GUI_DIR}/diagnostics_widget.cpp"
+    # New shell components (2026 redesign)
+    "${GUI_DIR}/theme_tokens.cpp"
+    "${GUI_DIR}/controls.cpp"
+    "${GUI_DIR}/cards.cpp"
+    "${GUI_DIR}/drawer.cpp"
 )
 
 # Server sources
