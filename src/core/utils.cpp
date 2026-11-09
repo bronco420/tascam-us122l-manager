@@ -434,12 +434,25 @@ QString Utils::getJackBuffer() {
 }
 
 bool Utils::bridgeIsActive() {
+    // Il bridge usa libpipewire-module-jack-tunnel, caricato a runtime da un
+    // processo `pw-cli -m` esterno: il modulo non appare né in
+    // `pactl list modules` né in `pw-cli list-objects Module` del daemon.
+    // Il segnale affidabile è la presenza del sink esportato.
     QProcess pactl;
-    pactl.start("pactl", QStringList() << "list" << "short" << "modules");
-    pactl.waitForFinished(1000);
+    pactl.start("pactl", QStringList() << "list" << "short" << "sinks");
+    if (!pactl.waitForFinished(1500)) {
+        pactl.kill();
+        return false;
+    }
 
-    QString output = pactl.readAllStandardOutput();
-    return output.contains("module-jack");
+    const QString output = pactl.readAllStandardOutput();
+    for (const QString& line : output.split('\n')) {
+        const QStringList parts = line.split('\t');
+        if (parts.size() >= 2 && parts.at(1).trimmed() == "tascam_bridge_sink") {
+            return true;
+        }
+    }
+    return false;
 }
 
 QString Utils::getBridgeSink() {
@@ -451,11 +464,9 @@ QString Utils::getBridgeSink() {
     QStringList lines = output.split('\n');
 
     for (const QString& line : lines) {
-        if (line.contains("jack", Qt::CaseInsensitive)) {
-            QStringList parts = line.split('\t');
-            if (parts.size() >= 2) {
-                return parts[1];
-            }
+        const QStringList parts = line.split('\t');
+        if (parts.size() >= 2 && parts.at(1).trimmed() == "tascam_bridge_sink") {
+            return parts.at(1).trimmed();
         }
     }
 
@@ -471,11 +482,9 @@ QString Utils::getBridgeSource() {
     QStringList lines = output.split('\n');
 
     for (const QString& line : lines) {
-        if (line.contains("jack", Qt::CaseInsensitive)) {
-            QStringList parts = line.split('\t');
-            if (parts.size() >= 2) {
-                return parts[1];
-            }
+        const QStringList parts = line.split('\t');
+        if (parts.size() >= 2 && parts.at(1).trimmed() == "tascam_bridge_source") {
+            return parts.at(1).trimmed();
         }
     }
 

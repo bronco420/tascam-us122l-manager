@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
 
     if (parser.isSet("bridge")) {
         QString mode = parser.value("bridge");
-        if (!jackManager.isRunning()) {
+        if (mode != "off" && !jackManager.isRunning()) {
             std::cerr << "Avvia prima JACK: il bridge richiede JACK attivo.\n";
             return 1;
         }
@@ -336,7 +336,12 @@ int main(int argc, char *argv[]) {
         } else {
             pwBridge.toggle();
         }
-        std::cout << (pwBridge.isActive() ? "Bridge PipeWire: ON\n" : "Bridge PipeWire: OFF\n");
+        const bool active = pwBridge.isActive();
+        std::cout << (active ? "Bridge PipeWire: ON\n" : "Bridge PipeWire: OFF\n");
+        if (!active && !pwBridge.lastError().isEmpty()) {
+            std::cerr << pwBridge.lastError().toStdString() << "\n";
+            return 1;
+        }
         return 0;
     }
 

@@ -219,6 +219,7 @@ void MainWindow::connectSignals() {
     // Bridge signals
     connect(m_pwBridge, &PipeWireBridge::bridgeEnabled, this, &MainWindow::onBridgeEnabled);
     connect(m_pwBridge, &PipeWireBridge::bridgeDisabled, this, &MainWindow::onBridgeDisabled);
+    connect(m_pwBridge, &PipeWireBridge::bridgeError, this, &MainWindow::onBridgeError);
 
     // Sysmode signals
     connect(m_sysmode, &Sysmode::sysmodeEnabled, this, &MainWindow::onSysmodeEnabled);
@@ -441,6 +442,11 @@ void MainWindow::onBridgeEnabled() {
 
 void MainWindow::onBridgeDisabled() {
     m_statusLabel->setText("Bridge disabilitato");
+}
+
+void MainWindow::onBridgeError(const QString& error) {
+    QMessageBox::warning(this, "Bridge PipeWire", error);
+    m_statusLabel->setText("Bridge: errore");
 }
 
 void MainWindow::onSysmodeEnabled() {

@@ -75,6 +75,7 @@ private slots:
     void onJackError(const QString& error);
     void onBridgeEnabled();
     void onBridgeDisabled();
+    void onBridgeError(const QString& error);
     void onSysmodeEnabled();
     void onSysmodeDisabled();
     void onPresetApplied(const QString& name);
