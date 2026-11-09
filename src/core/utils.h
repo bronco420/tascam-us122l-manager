@@ -87,6 +87,9 @@ public:
     static QString generateDiagnosticsReport();
     static QString getCardModel();
     static QString getCardNumber();
+    // ALSA PCM name for jackd, e.g. "usb_stream:1" for card 1.
+    // Returns an empty string when the card is not detected.
+    static QString getUsbStreamDevice();
     static QString getSampleWidth();
     static QString getMidiClientName();
 };

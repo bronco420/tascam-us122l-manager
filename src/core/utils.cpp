@@ -698,9 +698,14 @@ void Utils::applyPreset(const QString& presetName) {
         QThread::sleep(1);
 
         QProcess startProcess;
+        const QString device = Utils::getUsbStreamDevice();
+        if (device.isEmpty()) {
+            Utils::logError("Tascam US-122L non rilevata: impossibile riavviare JACK.");
+            return;
+        }
         startProcess.start("jackd", QStringList()
                           << "-vR" << "-P50" << "-t20000" << "-S"
-                          << "-dalsa" << "-dusb_stream:0"
+                          << "-dalsa" << "-d" + device
                           << "-r" << sr
                           << "-p" << buf
                           << "-n" << per);
@@ -788,6 +793,14 @@ QString Utils::getCardNumber() {
         }
     }
     return "-";
+}
+
+QString Utils::getUsbStreamDevice() {
+    const QString card = getCardNumber();
+    if (card.isEmpty() || card == "-") {
+        return QString();
+    }
+    return "usb_stream:" + card;
 }
 
 QString Utils::getSampleWidth() {

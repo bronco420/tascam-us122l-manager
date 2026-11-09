@@ -164,7 +164,7 @@ DashboardWidget::DashboardWidget(QWidget* parent)
     titleBox->setSpacing(2);
     QLabel* title = new QLabel("Tascam US-122L", header);
     title->setObjectName("appTitle");
-    QLabel* sub = new QLabel("Control Panel  ·  Interface Audio USB 2.0", header);
+    QLabel* sub = new QLabel("Pannello di controllo  ·  Interfaccia Audio USB 2.0", header);
     sub->setObjectName("appSub");
     titleBox->addWidget(title);
     titleBox->addWidget(sub);
@@ -174,7 +174,7 @@ DashboardWidget::DashboardWidget(QWidget* parent)
     versionChip->setObjectName("versionChip");
     headerLayout->addWidget(versionChip);
 
-    m_statusLabel = new QLabel("READY", header);
+    m_statusLabel = new QLabel("PRONTO", header);
     m_statusLabel->setProperty("pill", "off");
     headerLayout->addWidget(m_statusLabel);
 
@@ -300,7 +300,7 @@ DashboardWidget::DashboardWidget(QWidget* parent)
     jackBarLay->addWidget(m_jackLabel);
     rightCol->addWidget(jackBar);
 
-    m_jackDetailLabel = new QLabel("Sample Rate: - Hz | Buffer: -");
+    m_jackDetailLabel = new QLabel("Frequenza: - Hz | Buffer: -");
     m_jackDetailLabel->setProperty("muted", true);
     rightCol->addWidget(m_jackDetailLabel);
 
@@ -488,7 +488,7 @@ void DashboardWidget::updateStatus(bool jackRunning, const QString& jackDetail,
     setLed(m_ledMidi, !midi.isEmpty() && midi != "assente", true);
 
     setPill(m_statusLabel, jackRunning);
-    m_statusLabel->setText(jackRunning ? "JACK ACTIVE" : "READY");
+    m_statusLabel->setText(jackRunning ? "JACK ATTIVO" : "PRONTO");
 
     m_jackLabel->setText(jackRunning ? "ON" : "OFF");
     m_jackLabel->setProperty("active", jackRunning);

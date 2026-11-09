@@ -9,6 +9,9 @@
 #include <QIcon>
 #include <QProcess>
 #include <QThread>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
 
 #include "core/jack_manager.h"
 #include "core/pipewire_bridge.h"
@@ -23,6 +26,28 @@
 #include "gui/main_window.h"
 
 #include <iostream>
+
+// Qt ships qtbase_it.qm but the catalog does not cover every parser string;
+// this fills the remaining gaps so --help is fully Italian.
+class CliTranslator : public QTranslator {
+public:
+    QString translate(const char* context, const char* sourceText,
+                      const char* disambiguation = nullptr,
+                      int n = -1) const override {
+        Q_UNUSED(context);
+        Q_UNUSED(disambiguation);
+        Q_UNUSED(n);
+        const QString s = QString::fromUtf8(sourceText);
+        if (s == QLatin1String("Displays help on commandline options.")) {
+            return QStringLiteral("Mostra la guida sulle opzioni della riga di comando.");
+        }
+        if (s == QLatin1String("Displays help, including generic Qt options.")) {
+            return QStringLiteral("Mostra la guida, incluse le opzioni generiche di Qt.");
+        }
+        return QString();
+    }
+};
+
 
 int main(int argc, char *argv[]) {
     // Initialize Qt application
@@ -40,56 +65,67 @@ int main(int argc, char *argv[]) {
         themeFile.close();
     }
 
+    // Load Qt's own Italian translations so that the parser's built-in help
+    // and error strings ("Utilizzo:", "Valore mancante dopo...") stay in the
+    // same language as the rest of the CLI.
+    QTranslator qtTranslator;
+    const QString qtTrPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
+    if (qtTranslator.load(QLocale(), "qtbase", "_", qtTrPath)) {
+        app.installTranslator(&qtTranslator);
+    }
+    CliTranslator cliTranslator;
+    app.installTranslator(&cliTranslator);
+
     // Parse command line arguments
     QCommandLineParser parser;
-    parser.setApplicationDescription("Tascam US-122L Manager - Professional Audio Interface Control");
+    parser.setApplicationDescription("Tascam US-122L Manager - Controllo interfaccia audio professionale");
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption dashboardOption("dashboard", "Open the Control Panel (Qt dashboard)");
+    QCommandLineOption dashboardOption("dashboard", "Apre il pannello di controllo (dashboard Qt)");
     parser.addOption(dashboardOption);
 
-    QCommandLineOption startOption("start", "Start JACK with saved settings");
+    QCommandLineOption startOption("start", "Avvia JACK con le impostazioni salvate");
     parser.addOption(startOption);
 
-    QCommandLineOption stopOption("stop", "Stop JACK");
+    QCommandLineOption stopOption("stop", "Ferma JACK");
     parser.addOption(stopOption);
 
-    QCommandLineOption restartOption("restart", "Restart JACK");
+    QCommandLineOption restartOption("restart", "Riavvia JACK");
     parser.addOption(restartOption);
 
-    QCommandLineOption statusOption("status", "Show status (text)");
+    QCommandLineOption statusOption("status", "Mostra lo stato (testo)");
     parser.addOption(statusOption);
 
-    QCommandLineOption diagOption("diag", "Show full diagnostics (report)");
+    QCommandLineOption diagOption("diag", "Mostra la diagnostica completa (report)");
     parser.addOption(diagOption);
 
     QCommandLineOption bridgeOption("bridge",
-        "PipeWire-JACK bridge (on|off|toggle). Requires JACK running.",
+        "Bridge PipeWire-JACK (on|off|toggle). Richiede JACK attivo.",
         "mode");
     parser.addOption(bridgeOption);
 
     QCommandLineOption sysmodeOption("sysmode",
-        "Use Tascam as system card (on|off|toggle). Exclusive with JACK.",
+        "Usa la Tascam come scheda di sistema (on|off|toggle). Esclusivo con JACK.",
         "mode");
     parser.addOption(sysmodeOption);
 
-    QCommandLineOption watchOption("watch", "Watchdog: restart JACK if it dies");
+    QCommandLineOption watchOption("watch", "Watchdog: riavvia JACK se si interrompe");
     parser.addOption(watchOption);
 
-    QCommandLineOption watchStopOption("watch-stop", "Stop the watchdog");
+    QCommandLineOption watchStopOption("watch-stop", "Ferma il watchdog");
     parser.addOption(watchStopOption);
 
     QCommandLineOption autostartOption("autostart",
-        "Auto-start JACK at login (on|off)",
+        "Avvio automatico di JACK al login (on|off)",
         "mode");
     parser.addOption(autostartOption);
 
-    QCommandLineOption silentOption("silent", "No GUI windows (for systemd/cron)");
+    QCommandLineOption silentOption("silent", "Nessuna finestra GUI (per systemd/cron)");
     parser.addOption(silentOption);
 
     QCommandLineOption screenshotOption("screenshot",
-        "Grab a screenshot of the GUI to FILE (useful for docs)",
+        "Salva uno screenshot della GUI nel FILE indicato (per la documentazione)",
         "file");
     parser.addOption(screenshotOption);
 
@@ -108,9 +144,14 @@ int main(int argc, char *argv[]) {
     // Handle command line options
     if (parser.isSet("status")) {
         // Text status output
-        std::cout << "========================================\n";
-        std::cout << "  Tascam US-122L Manager - Status\n";
-        std::cout << "========================================\n";
+        auto row = [](const QString& label, const QString& value) {
+            std::cout << label.leftJustified(20, ' ').toStdString()
+                      << value.toStdString() << "\n";
+        };
+
+        std::cout << "==================================================\n";
+        std::cout << "  Tascam US-122L Manager - Stato\n";
+        std::cout << "==================================================\n";
 
         auto model = diagnostics.getCardModel();
         auto cardNum = diagnostics.getCardNumber();
@@ -119,56 +160,48 @@ int main(int argc, char *argv[]) {
         auto sampleWidth = diagnostics.getSampleWidth();
         auto midiClient = diagnostics.getMidiClientName();
 
-        std::cout << "Device:        " << model.toStdString()
-                  << " (card " << cardNum.toStdString() << ")\n";
-        std::cout << "Connection:    " << usbConn.toStdString() << "\n";
-        std::cout << "Firmware:       " << firmware.toStdString()
-                  << " | Sample: " << sampleWidth.toStdString() << "\n";
-        std::cout << "Device MIDI:    " << midiClient.toStdString() << "\n";
+        row("Dispositivo:", model + QString(" (scheda %1)").arg(
+                cardNum.isEmpty() ? QString("?") : cardNum));
+        row("Connessione:", usbConn);
+        row("Firmware:", firmware + " | Campionamento: " + sampleWidth);
+        row("MIDI dispositivo:", midiClient);
 
         if (!cardNum.isEmpty()) {
-            if (jackManager.isDriverLoaded()) {
-                std::cout << "Driver:         loaded\n";
-            } else {
-                std::cout << "Driver:         NOT loaded\n";
-            }
+            row("Driver:", jackManager.isDriverLoaded()
+                    ? "caricato" : "NON caricato");
         }
 
-        std::cout << "JACK server:    " << (jackManager.isRunning() ? "ACTIVE" : "INACTIVE") << "\n";
+        row("Server JACK:", jackManager.isRunning() ? "ATTIVO" : "INATTIVO");
 
         if (jackManager.isRunning()) {
             auto sr = jackManager.getSampleRate();
             auto buf = jackManager.getBufferSize();
             auto pid = jackManager.getPID();
 
-            std::cout << "  Sample Rate:     " << sr.toStdString() << " Hz\n";
-            std::cout << "  Buffer Size:     " << buf.toStdString() << " frames\n";
-            std::cout << "  PID:             " << pid.toStdString() << "\n";
-
-            auto periods = jackManager.getPeriods();
-            std::cout << "  Periods:         " << periods.toStdString() << "\n";
+            row("  Frequenza:", sr + " Hz");
+            row("  Buffer:", buf + " frame");
+            row("  Periodi:", jackManager.getPeriods());
+            row("  PID:", pid);
         }
 
-        std::cout << "Bridge PipeWire:    "
-                  << (pwBridge.isActive() ? "ON" : "OFF") << "\n";
+        row("Bridge PipeWire:", pwBridge.isActive() ? "ON" : "OFF");
 
-        std::cout << "Sysmode:    "
-                  << (sysmode.isActive() ? "ACTIVE (Tascam output)" : "OFF") << "\n";
-
-        std::cout << "Watchdog:   "
-                  << (watchdog.isRunning() ? "active" : "stopped") << "\n";
-
-        if (config.asoundrcExists()) {
-            std::cout << ".asoundrc:          configured\n";
+        QString sysmodeState;
+        if (sysmode.isFunctional()) {
+            sysmodeState = "ATTIVO (uscita Tascam)";
+        } else if (sysmode.isActive()) {
+            sysmodeState = "DEGRADATO (moduli incompleti: esegui "
+                           "'--sysmode off' poi '--sysmode on')";
         } else {
-            std::cout << ".asoundrc:          NOT configured\n";
+            sysmodeState = "OFF";
         }
+        row("Sysmode:", sysmodeState);
 
-        if (config.autostartEnabled()) {
-            std::cout << "Auto-start:         enabled\n";
-        } else {
-            std::cout << "Auto-start:         disabled\n";
-        }
+        row("Watchdog:", watchdog.isRunning() ? "attivo" : "fermo");
+        row(".asoundrc:", config.asoundrcExists()
+                ? "configurato" : "NON configurato");
+        row("Avvio automatico:", config.autostartEnabled()
+                ? "abilitato" : "disabilitato");
 
         return 0;
     }
@@ -186,19 +219,29 @@ int main(int argc, char *argv[]) {
         auto buf = config.getBufferSize();
         auto periods = config.getPeriods();
 
-        std::cout << "Starting JACK (" << sr.toStdString() << "Hz / "
+        std::cout << "Avvio JACK (" << sr.toStdString() << "Hz / "
                   << buf.toStdString() << " / " << periods.toStdString() << ")...\n";
+        // In CLI mode nothing shows the GUI error banner: capture the reason
+        // emitted by JackManager and print it here.
+        QString cliError;
+        QObject::connect(&jackManager, &JackManager::errorOccurred,
+                         [&cliError](const QString& message) { cliError = message; });
         if (!jackManager.start(sr, buf, periods)) {
-            std::cerr << "Failed to start JACK. Check the log for details.\n";
+            if (!cliError.isEmpty()) {
+                std::cerr << cliError.toStdString() << "\n";
+            } else {
+                std::cerr << "Impossibile avviare JACK. Dettagli nel log: "
+                             "~/.config/tascam-us122l/jack.log\n";
+            }
             return 1;
         }
-        std::cout << "JACK started (PID " << jackManager.getPID().toStdString() << ").\n";
+        std::cout << "JACK avviato (PID " << jackManager.getPID().toStdString() << ").\n";
         return 0;
     }
 
     if (parser.isSet("stop")) {
         jackManager.stop();
-        std::cout << "JACK stopped.\n";
+        std::cout << "JACK fermato.\n";
         return 0;
     }
 
@@ -208,25 +251,30 @@ int main(int argc, char *argv[]) {
         auto sr = config.getSampleRate();
         auto buf = config.getBufferSize();
         auto periods = config.getPeriods();
+        QString cliError;
+        QObject::connect(&jackManager, &JackManager::errorOccurred,
+                         [&cliError](const QString& message) { cliError = message; });
         if (!jackManager.start(sr, buf, periods)) {
-            std::cerr << "Failed to restart JACK.\n";
+            std::cerr << (cliError.isEmpty()
+                    ? QString("Impossibile riavviare JACK.")
+                    : cliError).toStdString() << "\n";
             return 1;
         }
-        std::cout << "JACK restarted.\n";
+        std::cout << "JACK riavviato.\n";
         return 0;
     }
 
     if (parser.isSet("watch")) {
         if (watchdog.isRunning()) {
-            std::cout << "Watchdog already running.\n";
+            std::cout << "Watchdog gia' attivo.\n";
             return 0;
         }
         watchdog.start();
         if (!watchdog.isRunning()) {
-            std::cerr << "Failed to start watchdog.\n";
+            std::cerr << "Impossibile avviare il watchdog.\n";
             return 1;
         }
-        std::cout << "Watchdog started (PID "
+        std::cout << "Watchdog avviato (PID "
                   << QCoreApplication::applicationPid() << ").\n";
         // Keep the process alive so the watchdog's QTimers can fire.
         return app.exec();
@@ -235,7 +283,7 @@ int main(int argc, char *argv[]) {
     if (parser.isSet("watch-stop")) {
         if (watchdog.isRunning()) {
             watchdog.stop();
-            std::cout << "Watchdog stopped.\n";
+            std::cout << "Watchdog fermato.\n";
             return 0;
         }
         // Stop a watchdog running in another process via its pid file.
@@ -250,9 +298,9 @@ int main(int argc, char *argv[]) {
                 killProc.waitForFinished(1000);
                 if (killProc.exitCode() == 0) {
                     QThread::msleep(200);
-                    std::cout << "Watchdog (PID " << pid.toStdString() << ") stopped.\n";
+                    std::cout << "Watchdog (PID " << pid.toStdString() << ") fermato.\n";
                 } else {
-                    std::cerr << "Failed to stop watchdog (PID " << pid.toStdString() << ").\n";
+                    std::cerr << "Impossibile fermare il watchdog (PID " << pid.toStdString() << ").\n";
                 }
             }
         }
@@ -264,12 +312,12 @@ int main(int argc, char *argv[]) {
         QString mode = parser.value("autostart");
         if (mode == "on") {
             config.setAutostart(true);
-            std::cout << "Auto-start enabled.\n";
+            std::cout << "Avvio automatico abilitato.\n";
         } else if (mode == "off") {
             config.setAutostart(false);
-            std::cout << "Auto-start disabled.\n";
+            std::cout << "Avvio automatico disabilitato.\n";
         } else {
-            std::cerr << "Usage: --autostart on|off\n";
+            std::cerr << "Uso: --autostart on|off\n";
             return 1;
         }
         return 0;
@@ -278,7 +326,7 @@ int main(int argc, char *argv[]) {
     if (parser.isSet("bridge")) {
         QString mode = parser.value("bridge");
         if (!jackManager.isRunning()) {
-            std::cerr << "Start JACK first! The bridge requires JACK to be running.\n";
+            std::cerr << "Avvia prima JACK: il bridge richiede JACK attivo.\n";
             return 1;
         }
         if (mode == "on") {
@@ -301,7 +349,7 @@ int main(int argc, char *argv[]) {
         } else {
             sysmode.toggle();
         }
-        std::cout << (sysmode.isActive() ? "Sysmode: ACTIVE (Tascam output)\n" : "Sysmode: OFF\n");
+        std::cout << (sysmode.isActive() ? "Sysmode: ATTIVO (uscita Tascam)\n" : "Sysmode: OFF\n");
         return 0;
     }
 
@@ -317,10 +365,10 @@ int main(int argc, char *argv[]) {
         QTimer::singleShot(1200, [&]() {
             const QPixmap pm = mainWindow.grab();
             if (!pm.save(outFile)) {
-                std::cerr << "Failed to save screenshot to " << outFile.toStdString() << "\n";
+                std::cerr << "Impossibile salvare lo screenshot in " << outFile.toStdString() << "\n";
                 qApp->exit(1);
             } else {
-                std::cout << "Screenshot saved to " << outFile.toStdString() << "\n";
+                std::cout << "Screenshot salvato in " << outFile.toStdString() << "\n";
                 qApp->exit(0);
             }
         });
@@ -329,12 +377,12 @@ int main(int argc, char *argv[]) {
     // Non-blocking warning if the card is not detected
     if (!diagnostics.isCardDetected()) {
         QTimer::singleShot(0, [&mainWindow]() {
-            QMessageBox::warning(&mainWindow, "Warning",
-                "Tascam US-122L not detected!\n\n"
-                "Make sure:\n"
-                "- The card is connected via USB\n"
-                "- No other app is using the card\n"
-                "- The driver is loaded");
+            QMessageBox::warning(&mainWindow, "Attenzione",
+                "Tascam US-122L non rilevata!\n\n"
+                "Verifica che:\n"
+                "- la scheda sia collegata via USB\n"
+                "- nessun'altra applicazione la stia usando\n"
+                "- il driver sia caricato");
         });
     }
 

@@ -34,6 +34,27 @@ Sysmode::Sysmode(Config& config, QObject* parent)
         }
         stateFileObj.close();
     }
+
+    // Sanitize: state.conf may hold leftovers from a previous release or a
+    // broken run (e.g. sink "auto_null", profile "off"). Restoring those
+    // would leave the system with no working audio output at all.
+    if (m_previousSink.isEmpty() || m_previousSink == "auto_null"
+        || m_previousSink.contains("US122L")
+        || m_previousSink.contains("jack", Qt::CaseInsensitive)
+        || !sinkNamedExists(m_previousSink)) {
+        m_previousSink.clear();
+    }
+    if (m_previousSource.isEmpty() || m_previousSource == "auto_null"
+        || m_previousSource.contains("US122L")
+        || !sourceNamedExists(m_previousSource)) {
+        m_previousSource.clear();
+    }
+    // Profile names look like "output:analog-stereo+input:analog-stereo";
+    // a bare "off" (or anything unknown) is not a usable restore target.
+    if (m_previousProfile.trimmed() == "off"
+        || !m_previousProfile.contains(':')) {
+        m_previousProfile.clear();
+    }
 }
 
 Sysmode::~Sysmode() {
@@ -43,30 +64,180 @@ Sysmode::~Sysmode() {
 }
 
 bool Sysmode::isActive() const {
-    QProcess pactl;
-    pactl.start("pactl", QStringList() << "list" << "short" << "sinks");
-    pactl.waitForFinished(1000);
-
-    QString output = pactl.readAllStandardOutput();
-    if (output.contains("US122L_Out")) {
-        return true;
-    }
-
-    // A source may survive while the sink is gone (or vice versa); treat any
-    // leftover module as active so toggle()/disable() can clean up properly.
-    pactl.start("pactl", QStringList() << "list" << "short" << "sources");
-    pactl.waitForFinished(1000);
-    output = pactl.readAllStandardOutput();
-    return output.contains("US122L_In");
+    // Leftover modules count as active so toggle()/disable() can clean up.
+    return sinkExists() || sourceExists();
 }
 
 bool Sysmode::sourceExists() const {
-    QProcess pactl;
-    pactl.start("pactl", QStringList() << "list" << "short" << "sources");
-    pactl.waitForFinished(1000);
+    return sourceNamedExists(getSourceName());
+}
 
-    QString output = pactl.readAllStandardOutput();
-    return output.contains("US122L_In");
+bool Sysmode::sinkExists() const {
+    return sinkNamedExists(getSinkName());
+}
+
+static QStringList pactlShort(const QString& what) {
+    QProcess pactl;
+    pactl.start("pactl", QStringList() << "list" << "short" << what);
+    pactl.waitForFinished(1500);
+    return QString::fromUtf8(pactl.readAllStandardOutput())
+        .split('\n', Qt::SkipEmptyParts);
+}
+
+bool Sysmode::sinkNamedExists(const QString& name) const {
+    if (name.isEmpty()) {
+        return false;
+    }
+    for (const QString& line : pactlShort("sinks")) {
+        const QStringList parts = line.split('\t');
+        if (parts.size() >= 2 && parts.value(1).trimmed() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Sysmode::sourceNamedExists(const QString& name) const {
+    if (name.isEmpty()) {
+        return false;
+    }
+    for (const QString& line : pactlShort("sources")) {
+        const QStringList parts = line.split('\t');
+        if (parts.size() >= 2 && parts.value(1).trimmed() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Sysmode::moduleLoadedFor(const QString& needle) const {
+    for (const QString& line : pactlShort("modules")) {
+        if (line.contains(needle)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Sysmode::isFunctional() const {
+    return sinkNamedExists(getSinkName())
+        && sourceNamedExists(getSourceName())
+        && moduleLoadedFor("sink_name=US122L_Out")
+        && moduleLoadedFor("source_name=US122L_In");
+}
+
+// Find a real (non-Tascam, non-dummy) sink to fall back to when the previously
+// saved default sink is gone (e.g. "auto_null" after the PCH was disabled).
+QString Sysmode::findFallbackSink() const {
+    QString firstAny;
+    for (const QString& line : pactlShort("sinks")) {
+        const QStringList parts = line.split('\t');
+        if (parts.size() < 2) {
+            continue;
+        }
+        const QString name = parts.value(1).trimmed();
+        if (name.isEmpty() || name.contains("US122L") || name == "auto_null"
+            || name.contains("jack", Qt::CaseInsensitive)) {
+            continue;
+        }
+        if (firstAny.isEmpty()) {
+            firstAny = name;
+        }
+        // Prefer the analog PCH output.
+        if (name.contains("analog-stereo")) {
+            return name;
+        }
+    }
+    return firstAny;
+}
+
+bool Sysmode::profileAvailable(const QString& profile) const {
+    if (profile.isEmpty() || profile == "off") {
+        return false;
+    }
+    QProcess pactl;
+    pactl.start("pactl", QStringList() << "list" << "cards");
+    pactl.waitForFinished(3000);
+
+    const QStringList lines = QString::fromUtf8(pactl.readAllStandardOutput()).split('\n');
+    bool inPch = false;
+    for (const QString& line : lines) {
+        if (line.contains("Name: alsa_card.pci-0000_00_1b.0")) {
+            inPch = true;
+            continue;
+        }
+        if (!inPch) {
+            continue;
+        }
+        if (line.contains("Active Profile:")) {
+            break; // end of the profile block for this card
+        }
+        // Profile lines look like: "\t\toutput:analog-stereo: ... (available: yes)"
+        if (line.trimmed().startsWith(profile + ":")
+            || line.trimmed().startsWith("\"" + profile + "\":")) {
+            return line.contains("available: yes");
+        }
+    }
+    return false;
+}
+
+// Pick an available output profile on the PCH card, preferring analog stereo.
+QString Sysmode::findFallbackProfile() const {
+    QProcess pactl;
+    pactl.start("pactl", QStringList() << "list" << "cards");
+    pactl.waitForFinished(3000);
+
+    const QStringList lines = QString::fromUtf8(pactl.readAllStandardOutput()).split('\n');
+    bool inPch = false;
+    QString firstAvailable;
+    for (const QString& line : lines) {
+        if (line.contains("Name: alsa_card.pci-0000_00_1b.0")) {
+            inPch = true;
+            continue;
+        }
+        if (!inPch) {
+            continue;
+        }
+        if (line.contains("Active Profile:")) {
+            break;
+        }
+        const QString trimmed = line.trimmed();
+        if (!trimmed.contains("output:") || !trimmed.contains("available: yes")) {
+            continue;
+        }
+        // Profile names themselves contain ':' (e.g.
+        // "output:analog-stereo+input:analog-stereo"), so cut at the first
+        // ": " (colon followed by space) which ends the name.
+        const int sep = trimmed.indexOf(": ");
+        if (sep <= 0) {
+            continue;
+        }
+        const QString name = trimmed.left(sep);
+        if (name.isEmpty()) {
+            continue;
+        }
+        if (firstAvailable.isEmpty()) {
+            firstAvailable = name;
+        }
+        if (name.contains("analog-stereo") && trimmed.contains("sinks: 1")) {
+            return name;
+        }
+    }
+    return firstAvailable.isEmpty()
+        ? QString("output:analog-stereo+input:analog-stereo")
+        : firstAvailable;
+}
+
+bool Sysmode::waitForSink(const QString& name, int timeoutMs) const {
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < timeoutMs) {
+        if (sinkNamedExists(name)) {
+            return true;
+        }
+        QThread::msleep(100);
+    }
+    return false;
 }
 
 QString Sysmode::getSinkName() const {
@@ -287,8 +458,27 @@ void Sysmode::savePreviousState() {
     pactl.waitForFinished(1000);
     QString currentSource = pactl.readAllStandardOutput().trimmed();
 
+    // Only persist a sink that actually exists and is not the Tascam itself:
+    // "auto_null" (no hardware sink) would restore to silence.
+    if (currentSink.isEmpty() || currentSink == "auto_null"
+        || currentSink.contains("US122L") || !sinkNamedExists(currentSink)) {
+        currentSink = findFallbackSink();
+    }
+    if (currentSource.isEmpty() || currentSource == "auto_null"
+        || currentSource.contains("US122L")) {
+        currentSource.clear();
+    }
+
     // Get current PCH profile
     QString pchProfile = getCardProfile();
+    if (pchProfile.trimmed() == "off" || !pchProfile.contains(':')) {
+        pchProfile = findFallbackProfile();
+    }
+
+    // Remember in memory too (the process may keep running, e.g. GUI).
+    m_previousSink = currentSink;
+    m_previousSource = currentSource;
+    m_previousProfile = pchProfile;
 
     // Save to state file (preserving all other entries)
     QString stateFile = m_config.getStateFilePath();
@@ -302,21 +492,34 @@ void Sysmode::savePreviousState() {
 }
 
 void Sysmode::restorePreviousState() {
-    // Restore PCH card profile
-    if (!m_previousProfile.isEmpty()) {
-        setCardProfile(m_previousProfile);
-    } else {
-        setCardProfile("output:analog-stereo+input:analog-stereo");
+    // Restore PCH card profile first: switching the profile is what recreates
+    // the PCH sinks, so the sink we restore afterwards actually exists.
+    QString profile = m_previousProfile;
+    if (profile.isEmpty() || profile.trimmed() == "off"
+        || !profileAvailable(profile)) {
+        profile = findFallbackProfile();
+    }
+    if (!profile.isEmpty()) {
+        setCardProfile(profile);
     }
 
-    // Restore previous sink and source
-    if (!m_previousSink.isEmpty()) {
+    // Restore previous sink, falling back to any real hardware sink.
+    QString sink = m_previousSink;
+    if (sink.isEmpty() || !waitForSink(sink, 1500)) {
+        sink = findFallbackSink();
+    }
+    if (!sink.isEmpty()) {
         QProcess pactl;
-        pactl.start("pactl", QStringList() << "set-default-sink" << m_previousSink);
+        pactl.start("pactl", QStringList() << "set-default-sink" << sink);
         pactl.waitForFinished(3000);
+        Utils::logInfo("Default sink ripristinato: " + sink);
+    } else {
+        Utils::logWarn("Nessun sink disponibile da ripristinare: "
+                       "l'audio di sistema restera' muto finche' non viene "
+                       "selezionata manualmente un'uscita.");
     }
 
-    if (!m_previousSource.isEmpty()) {
+    if (!m_previousSource.isEmpty() && sourceNamedExists(m_previousSource)) {
         QProcess pactl;
         pactl.start("pactl", QStringList() << "set-default-source" << m_previousSource);
         pactl.waitForFinished(3000);

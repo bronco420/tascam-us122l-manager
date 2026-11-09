@@ -33,7 +33,10 @@ JackManager::JackManager(Config& config, QObject* parent)
 }
 
 JackManager::~JackManager() {
-    stop();
+    // Do NOT stop JACK here: jackd is started detached through the launcher,
+    // so it is not a child of this process and must survive both the CLI
+    // (--start) exiting and the GUI window being closed. Stopping is an
+    // explicit action (--stop / "Stop JACK" in the GUI).
     m_statusTimer->stop();
 }
 
@@ -113,7 +116,23 @@ bool JackManager::start(const QString& sampleRate, const QString& bufferSize, co
 
     // Check if Tascam is detected
     if (!checkCardDetected()) {
-        emit errorOccurred("Tascam US-122L not detected!");
+        emit errorOccurred("Tascam US-122L non rilevata!");
+        return false;
+    }
+
+    // Sysmode owns the usb_stream PCM exclusively: starting JACK would fail
+    // with a confusing "permission denied"/"device busy" error.
+    if (Utils::sysmodeIsActive()) {
+        emit errorOccurred("Sysmode attivo: la Tascam è usata come scheda di "
+                           "sistema. Esegui '--sysmode off' prima di avviare JACK.");
+        return false;
+    }
+
+    // Resolve the real card index (the US-122L is not always card 0).
+    const QString usbStreamDevice = Utils::getUsbStreamDevice();
+    if (usbStreamDevice.isEmpty()) {
+        emit errorOccurred("Impossibile determinare il numero di scheda della "
+                           "Tascam (controlla /proc/asound/cards).");
         return false;
     }
 
@@ -134,20 +153,21 @@ bool JackManager::start(const QString& sampleRate, const QString& bufferSize, co
              << "periods:" << per;
 
     // Build jackd command
-    QString cardNum = "0"; // Default card number
     QString launcher = m_config.getLauncherPath();
 
     QStringList jackdArgs;
     jackdArgs << "-vR" << "-P50" << "-t20000" << "-S";
     jackdArgs << "-dalsa";
-    jackdArgs << "-dusb_stream:" + cardNum;
+    jackdArgs << "-d" + usbStreamDevice;
     jackdArgs << "-r" + sr;
     jackdArgs << "-p" + buf;
     jackdArgs << "-n" + per;
 
-    // The launcher expects: --pidfile FILE -- jackd [args...]
+    // The launcher expects: --pidfile FILE --logfile FILE -- jackd [args...]
     QStringList launcherArgs;
-    launcherArgs << "--pidfile" << m_pidFile << "--" << "jackd" << jackdArgs;
+    launcherArgs << "--pidfile" << m_pidFile;
+    launcherArgs << "--logfile" << m_logFile;
+    launcherArgs << "--" << "jackd" << jackdArgs;
 
     // Start JACK with launcher (subreaper), detached so jackd survives
     // after the CLI process exits. The launcher writes the real jackd PID
@@ -155,13 +175,13 @@ bool JackManager::start(const QString& sampleRate, const QString& bufferSize, co
     qint64 launcherPid = 0;
     if (!QProcess::startDetached("python3", QStringList() << launcher << launcherArgs, QString(), &launcherPid)) {
         qDebug() << "Failed to start launcher";
-        emit errorOccurred("Failed to start the JACK launcher.");
+        emit errorOccurred("Impossibile avviare il launcher di JACK.");
         return false;
     }
 
     // Wait for JACK to start
     if (!waitForJackStart(5)) {
-        emit errorOccurred("Failed to start JACK. Check the log for details.");
+        emit errorOccurred(QString("Impossibile avviare JACK. Dettagli nel log: %1").arg(m_logFile));
         return false;
     }
 
@@ -213,7 +233,7 @@ void JackManager::restart() {
     QString per = getPeriods();
 
     if (!start(sr, buf, per)) {
-        emit errorOccurred("Failed to restart JACK");
+        emit errorOccurred("Impossibile riavviare JACK");
     }
 }
 

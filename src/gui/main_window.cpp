@@ -89,18 +89,18 @@ void MainWindow::createMenuBar() {
     connect(m_actionDashboard, &QAction::triggered, this, &MainWindow::showDashboard);
     fileMenu->addAction(m_actionDashboard);
 
-    m_actionQuit = new QAction("Quit", this);
+    m_actionQuit = new QAction("Esci", this);
     connect(m_actionQuit, &QAction::triggered, this, &MainWindow::onActionQuit);
     fileMenu->addAction(m_actionQuit);
 
     // JACK menu
     QMenu* jackMenu = mb->addMenu("JACK");
 
-    m_actionStart = new QAction("Start JACK", this);
+    m_actionStart = new QAction("Avvia JACK", this);
     connect(m_actionStart, &QAction::triggered, this, &MainWindow::onActionStart);
     jackMenu->addAction(m_actionStart);
 
-    m_actionStop = new QAction("Stop JACK", this);
+    m_actionStop = new QAction("Ferma JACK", this);
     connect(m_actionStop, &QAction::triggered, this, &MainWindow::onActionStop);
     jackMenu->addAction(m_actionStop);
 
@@ -110,99 +110,99 @@ void MainWindow::createMenuBar() {
     connect(m_actionBridge, &QAction::triggered, this, &MainWindow::onActionBridge);
     jackMenu->addAction(m_actionBridge);
 
-    m_actionSysmode = new QAction("System Card", this);
+    m_actionSysmode = new QAction("Scheda di sistema", this);
     connect(m_actionSysmode, &QAction::triggered, this, &MainWindow::onActionSysmode);
     jackMenu->addAction(m_actionSysmode);
 
     // Mixer menu
     QMenu* mixerMenu = mb->addMenu("Mixer");
 
-    m_actionMixer = new QAction("Open Mixer", this);
+    m_actionMixer = new QAction("Apri mixer", this);
     connect(m_actionMixer, &QAction::triggered, this, &MainWindow::onActionMixer);
     mixerMenu->addAction(m_actionMixer);
 
     // Preset menu
     QMenu* presetMenu = mb->addMenu("Presets");
 
-    m_actionPreset = new QAction("Open Presets", this);
+    m_actionPreset = new QAction("Apri preset", this);
     connect(m_actionPreset, &QAction::triggered, this, &MainWindow::onActionPreset);
     presetMenu->addAction(m_actionPreset);
 
     // Config menu
-    QMenu* configMenu = mb->addMenu("Configuration");
+    QMenu* configMenu = mb->addMenu("Configurazione");
 
-    m_actionConfig = new QAction("Configure JACK", this);
+    m_actionConfig = new QAction("Configura JACK", this);
     connect(m_actionConfig, &QAction::triggered, this, &MainWindow::onActionConfig);
     configMenu->addAction(m_actionConfig);
 
     // Tools menu
-    QMenu* toolsMenu = mb->addMenu("Tools");
+    QMenu* toolsMenu = mb->addMenu("Strumenti");
 
     m_actionWatch = new QAction("Watchdog", this);
     connect(m_actionWatch, &QAction::triggered, this, &MainWindow::onActionWatch);
     toolsMenu->addAction(m_actionWatch);
 
-    m_actionWatchStop = new QAction("Stop Watchdog", this);
+    m_actionWatchStop = new QAction("Ferma watchdog", this);
     connect(m_actionWatchStop, &QAction::triggered, this, &MainWindow::onActionWatchStop);
     toolsMenu->addAction(m_actionWatchStop);
 
     toolsMenu->addSeparator();
 
-    m_actionAutostart = new QAction("Auto-start", this);
+    m_actionAutostart = new QAction("Avvio automatico", this);
     connect(m_actionAutostart, &QAction::triggered, this, &MainWindow::onActionAutostart);
     toolsMenu->addAction(m_actionAutostart);
 
     // Info menu
-    QMenu* infoMenu = mb->addMenu("Info");
+    QMenu* infoMenu = mb->addMenu("Informazioni");
 
-    m_actionInfo = new QAction("Card Info", this);
+    m_actionInfo = new QAction("Info scheda", this);
     connect(m_actionInfo, &QAction::triggered, this, &MainWindow::onActionInfo);
     infoMenu->addAction(m_actionInfo);
 
-    m_actionMidi = new QAction("MIDI Info", this);
+    m_actionMidi = new QAction("Info MIDI", this);
     connect(m_actionMidi, &QAction::triggered, this, &MainWindow::onActionMidi);
     infoMenu->addAction(m_actionMidi);
 
-    m_actionMidiTest = new QAction("Test MIDI", this);
+    m_actionMidiTest = new QAction("Prova MIDI", this);
     connect(m_actionMidiTest, &QAction::triggered, this, &MainWindow::onActionMidiTest);
     infoMenu->addAction(m_actionMidiTest);
 
-    m_actionDocs = new QAction("Documentation", this);
+    m_actionDocs = new QAction("Documentazione", this);
     connect(m_actionDocs, &QAction::triggered, this, &MainWindow::onActionDocs);
     infoMenu->addAction(m_actionDocs);
 
-    m_actionDiag = new QAction("Diagnostics", this);
+    m_actionDiag = new QAction("Diagnostica", this);
     connect(m_actionDiag, &QAction::triggered, this, &MainWindow::onActionDiag);
     infoMenu->addAction(m_actionDiag);
 
     infoMenu->addSeparator();
 
-    m_actionAbout = new QAction("About", this);
+    m_actionAbout = new QAction("Informazioni su", this);
     connect(m_actionAbout, &QAction::triggered, this, &MainWindow::onActionAbout);
     infoMenu->addAction(m_actionAbout);
 
     // Debug menu
     QMenu* debugMenu = mb->addMenu("Debug");
 
-    m_actionRestart = new QAction("Restart JACK", this);
+    m_actionRestart = new QAction("Riavvia JACK", this);
     connect(m_actionRestart, &QAction::triggered, this, &MainWindow::onActionRestart);
     debugMenu->addAction(m_actionRestart);
 
-    m_actionOpenLog = new QAction("Open Log File", this);
+    m_actionOpenLog = new QAction("Apri file di log", this);
     connect(m_actionOpenLog, &QAction::triggered, this, &MainWindow::onActionOpenLog);
     debugMenu->addAction(m_actionOpenLog);
 
-    m_actionOpenAsound = new QAction("Open ALSA Config", this);
+    m_actionOpenAsound = new QAction("Apri configurazione ALSA", this);
     connect(m_actionOpenAsound, &QAction::triggered, this, &MainWindow::onActionOpenAsound);
     debugMenu->addAction(m_actionOpenAsound);
 
-    m_actionOpenTerminal = new QAction("Open Terminal", this);
+    m_actionOpenTerminal = new QAction("Apri terminale", this);
     connect(m_actionOpenTerminal, &QAction::triggered, this, &MainWindow::onActionOpenTerminal);
     debugMenu->addAction(m_actionOpenTerminal);
 }
 
 void MainWindow::createStatusBar() {
-    m_statusLabel = new QLabel("Ready", this);
+    m_statusLabel = new QLabel("Pronto", this);
     statusBar()->addWidget(m_statusLabel);
 }
 
@@ -262,8 +262,8 @@ void MainWindow::onActionStart() {
     QString per = m_config.getPeriods();
 
     if (!m_jackManager->start(sr, buf, per)) {
-        QMessageBox::critical(this, "Error",
-            "Failed to start JACK. Check the log for details.");
+        QMessageBox::critical(this, "Errore",
+            "Impossibile avviare JACK. Controlla il file di log.");
     }
 }
 
@@ -282,32 +282,32 @@ void MainWindow::onActionSysmode() {
 void MainWindow::onActionWatch() {
     if (m_watchdog->isRunning()) {
         m_watchdog->stop();
-        QMessageBox::information(this, "Watchdog", "Watchdog stopped.");
+        QMessageBox::information(this, "Watchdog", "Watchdog fermato.");
     } else {
         m_watchdog->start();
-        QMessageBox::information(this, "Watchdog", "Watchdog started in background.");
+        QMessageBox::information(this, "Watchdog", "Watchdog avviato in background.");
     }
 }
 
 void MainWindow::onActionWatchStop() {
     m_watchdog->stop();
-    QMessageBox::information(this, "Watchdog", "Watchdog stopped.");
+    QMessageBox::information(this, "Watchdog", "Watchdog fermato.");
 }
 
 void MainWindow::onActionAutostart() {
     if (m_config.autostartEnabled()) {
         m_config.setAutostart(false);
-        QMessageBox::information(this, "Auto-start", "Auto-start disabled.");
+        QMessageBox::information(this, "Avvio automatico", "Avvio automatico disabilitato.");
     } else {
         m_config.setAutostart(true);
-        QMessageBox::information(this, "Auto-start", "Auto-start enabled.");
+        QMessageBox::information(this, "Avvio automatico", "Avvio automatico abilitato.");
     }
 }
 
 void MainWindow::onActionMixer() {
     if (!m_mixer->isSinkAvailable() && !m_mixer->isSourceAvailable()) {
-        QMessageBox::warning(this, "Warning",
-            "No Tascam nodes active in PipeWire.\n\nEnable 'System Card' or 'Bridge' to use the mixer.");
+        QMessageBox::warning(this, "Attenzione",
+            "Nessun nodo Tascam attivo in PipeWire.\n\nAbilita 'Scheda di sistema' o 'Bridge' per usare il mixer.");
         return;
     }
 
@@ -319,70 +319,70 @@ void MainWindow::onActionMixer() {
 void MainWindow::onActionPreset() {
     m_presetWidget->show();
     m_stackedWidget->setCurrentWidget(m_presetWidget);
-    m_statusLabel->setText("Presets");
+    m_statusLabel->setText("Preset");
 }
 
 void MainWindow::onActionConfig() {
     m_configWidget->show();
     m_stackedWidget->setCurrentWidget(m_configWidget);
-    m_statusLabel->setText("Configuration");
+    m_statusLabel->setText("Configurazione");
 }
 
 void MainWindow::onActionInfo() {
     m_infoWidget->show();
     m_stackedWidget->setCurrentWidget(m_infoWidget);
-    m_statusLabel->setText("Card Info");
+    m_statusLabel->setText("Info scheda");
 }
 
 void MainWindow::onActionMidi() {
     m_infoWidget->show();
     m_stackedWidget->setCurrentWidget(m_infoWidget);
     m_infoWidget->showMidi();
-    m_statusLabel->setText("MIDI Info");
+    m_statusLabel->setText("Info MIDI");
 }
 
 void MainWindow::onActionMidiTest() {
     auto result = m_diagnostics->testMidiLoopback();
     if (result) {
-        QMessageBox::information(this, "Test MIDI",
-            "Test note sent successfully!\n\nIf you have a synth connected to the INPUT, you will hear a Do4.");
+        QMessageBox::information(this, "Prova MIDI",
+            "Nota di prova inviata.\n\nSe hai un synth collegato all'INGRESSO sentirai un Do4.");
     } else {
-        QMessageBox::critical(this, "Test MIDI",
-            "Failed to send test note to MIDI port.");
+        QMessageBox::critical(this, "Prova MIDI",
+            "Invio della nota di prova alla porta MIDI non riuscito.");
     }
 }
 
 void MainWindow::onActionDocs() {
     m_docsWidget->show();
     m_stackedWidget->setCurrentWidget(m_docsWidget);
-    m_statusLabel->setText("Documentation");
+    m_statusLabel->setText("Documentazione");
 }
 
 void MainWindow::onActionDiag() {
     m_diagWidget->show();
     m_stackedWidget->setCurrentWidget(m_diagWidget);
-    m_statusLabel->setText("Diagnostics");
+    m_statusLabel->setText("Diagnostica");
 }
 
 void MainWindow::onActionAbout() {
     QMessageBox box(this);
-    box.setWindowTitle("About");
+    box.setWindowTitle("Informazioni su");
     box.setIconPixmap(QIcon(":/icons/tascam-us122l.png").pixmap(64, 64));
     box.setText(QString("<h3>Tascam US-122L Manager %1</h3>"
-                        "<p>Professional audio interface control tool for the "
-                        "Tascam US-122L on Linux.</p>"
-                        "<p><b>Author:</b> Bronco (bronco420)</p>"
-                        "<p>Developed from scratch - no external code converted.</p>"
+                        "<p>Strumento di controllo per l'interfaccia audio "
+                        "Tascam US-122L su Linux.</p>"
+                        "<p><b>Autore:</b> Bronco (bronco420)</p>"
+                        "<p>Sviluppato da zero - nessun codice esterno convertito.</p>"
                         "<p><b>License:</b> MIT - https://github.com/bronco420"
                         "/tascam-us122l-manager</p>")
                     .arg(QCoreApplication::applicationVersion()));
-    box.setInformativeText("Built with:\n"
+    box.setInformativeText("Realizzato con:\n"
                            "- Qt " QT_VERSION_STR " (LGPL v3)\n"
                            "- JACK Audio Connection Kit\n"
                            "- PipeWire\n"
                            "- ALSA usb_stream\n\n"
-                           "Product photographs and the Tascam logo are property "
-                           "of TEAC Corporation / Tascam.");
+                           "Le fotografie del prodotto e il logo Tascam sono di proprieta' "
+                           "di TEAC Corporation / Tascam.");
     box.exec();
 }
 
@@ -396,7 +396,7 @@ void MainWindow::onActionOpenLog() {
     if (fileInfo.exists()) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(logPath));
     } else {
-        QMessageBox::warning(this, "Log File", "Log file not found.");
+        QMessageBox::warning(this, "File di log", "File di log non trovato.");
     }
 }
 
@@ -406,7 +406,7 @@ void MainWindow::onActionOpenAsound() {
     if (fileInfo.exists()) {
         QDesktopServices::openUrl(QUrl::fromLocalFile(asoundrcPath));
     } else {
-        QMessageBox::warning(this, "ALSA Config", "Config file not found.");
+        QMessageBox::warning(this, "Configurazione ALSA", "File di configurazione non trovato.");
     }
 }
 
@@ -423,48 +423,48 @@ void MainWindow::onActionQuit() {
 }
 
 void MainWindow::onJackStarted() {
-    m_statusLabel->setText("JACK Started");
+    m_statusLabel->setText("JACK avviato");
 }
 
 void MainWindow::onJackStopped() {
-    m_statusLabel->setText("JACK Stopped");
+    m_statusLabel->setText("JACK fermato");
 }
 
 void MainWindow::onJackError(const QString& error) {
-    QMessageBox::critical(this, "JACK Error", error);
-    m_statusLabel->setText("JACK Error");
+    QMessageBox::critical(this, "Errore JACK", error);
+    m_statusLabel->setText("Errore JACK");
 }
 
 void MainWindow::onBridgeEnabled() {
-    m_statusLabel->setText("Bridge Enabled");
+    m_statusLabel->setText("Bridge abilitato");
 }
 
 void MainWindow::onBridgeDisabled() {
-    m_statusLabel->setText("Bridge Disabled");
+    m_statusLabel->setText("Bridge disabilitato");
 }
 
 void MainWindow::onSysmodeEnabled() {
-    m_statusLabel->setText("System Card Enabled");
+    m_statusLabel->setText("Scheda di sistema abilitata");
 }
 
 void MainWindow::onSysmodeDisabled() {
-    m_statusLabel->setText("System Card Disabled");
+    m_statusLabel->setText("Scheda di sistema disabilitata");
 }
 
 void MainWindow::onPresetApplied(const QString& name) {
-    m_statusLabel->setText("Preset Applied: " + name);
+    m_statusLabel->setText("Preset applicato: " + name);
 }
 
 void MainWindow::onWatchdogStarted() {
-    m_statusLabel->setText("Watchdog Started");
+    m_statusLabel->setText("Watchdog avviato");
 }
 
 void MainWindow::onWatchdogStopped() {
-    m_statusLabel->setText("Watchdog Stopped");
+    m_statusLabel->setText("Watchdog fermato");
 }
 
 void MainWindow::onWatchdogJackRestarted() {
-    m_statusLabel->setText("JACK Restarted by Watchdog");
+    m_statusLabel->setText("JACK riavviato dal watchdog");
 }
 
 // Dispatch dashboard actions to the core modules in-process.
@@ -532,11 +532,11 @@ void MainWindow::updateStatusWidgets() {
 
     QString jackDetail;
     if (jackRunning) {
-        jackDetail = QString("Sample Rate: %1 Hz | Buffer: %2 frames")
+        jackDetail = QString("Frequenza: %1 Hz | Buffer: %2 frame")
                      .arg(m_jackManager->getSampleRate())
                      .arg(m_jackManager->getBufferSize());
     } else {
-        jackDetail = QString("Sample Rate: %1 Hz | Buffer: %2 frames")
+        jackDetail = QString("Frequenza: %1 Hz | Buffer: %2 frame")
                      .arg(m_config.getSampleRate())
                      .arg(m_config.getBufferSize());
     }
@@ -556,7 +556,7 @@ void MainWindow::updateStatusWidgets() {
         bridgeActive, sysmodeActive,
         watchdogRunning, m_config.autostartEnabled(),
         m_diagnostics->getCardModel(),
-        m_jackManager->isDriverLoaded() ? "loaded" : "not loaded",
+        m_jackManager->isDriverLoaded() ? "caricato" : "non caricato",
         m_diagnostics->getFirmwareVersion(),
         m_diagnostics->getUSBConnection(),
         midiClient, audioOn,

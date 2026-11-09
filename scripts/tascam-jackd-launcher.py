@@ -16,6 +16,7 @@ import os
 import signal
 import subprocess
 import sys
+import time
 
 try:
     import ctypes
@@ -28,11 +29,15 @@ except Exception:
 
 def parse_args(argv):
     pidfile = None
+    logfile = None
     rest = []
     i = 0
     while i < len(argv):
         if argv[i] == "--pidfile" and i + 1 < len(argv):
             pidfile = argv[i + 1]
+            i += 2
+        elif argv[i] == "--logfile" and i + 1 < len(argv):
+            logfile = argv[i + 1]
             i += 2
         elif argv[i] == "--":
             rest = argv[i + 1:]
@@ -40,14 +45,26 @@ def parse_args(argv):
         else:
             rest.append(argv[i])
             i += 1
-    return pidfile, rest
+    return pidfile, logfile, rest
 
 
 def main():
-    pidfile, cmd = parse_args(sys.argv[1:])
+    pidfile, logfile, cmd = parse_args(sys.argv[1:])
     if not cmd:
         sys.stderr.write("launcher: nessun comando\n")
         return 2
+
+    log_handle = None
+    if logfile:
+        try:
+            os.makedirs(os.path.dirname(logfile), exist_ok=True)
+            # Append so that restarts keep the history; rotateLog() (C++)
+            # renames the file when it exceeds 1 MB.
+            log_handle = open(logfile, "a", buffering=1, encoding="utf-8",
+                              errors="replace")
+            log_handle.write("--- launcher: avvio %s ---\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+        except OSError:
+            log_handle = None
 
     try:
         # Disable the D-Bus audio reservation protocol: on many systems there is
@@ -57,8 +74,11 @@ def main():
         child_env.setdefault("JACK_NO_AUDIO_RESERVATION", "1")
         # Detach into a new session so jackd survives after the caller
         # process (CLI/GUI) exits.
-        proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, env=child_env,
-                                start_new_session=True)
+        proc = subprocess.Popen(
+            cmd, stdin=subprocess.DEVNULL, env=child_env,
+            stdout=log_handle if log_handle else subprocess.DEVNULL,
+            stderr=subprocess.STDOUT if log_handle else subprocess.DEVNULL,
+            start_new_session=True)
     except FileNotFoundError:
         sys.stderr.write("launcher: comando non trovato: %s\n" % cmd[0])
         return 127
@@ -80,6 +100,7 @@ def main():
         signal.signal(s, forward)
 
     try:
+        rc = None
         while True:
             try:
                 rc = proc.wait()
@@ -91,6 +112,12 @@ def main():
             os.waitpid(proc.pid, 0)
         except OSError:
             pass
+        if log_handle:
+            try:
+                log_handle.write("--- launcher: jackd terminato (rc=%s) ---\n" % rc)
+                log_handle.close()
+            except OSError:
+                pass
 
     return rc if rc is not None else 0
 

@@ -177,18 +177,27 @@ bool Preset::restartJACKWithPreset(const PresetConfig& preset) {
     // Start JACK with new preset
     QString launcher = m_config.getLauncherPath();
     QString pidFile = m_config.getSettingsDir() + "/jack.pid";
+    QString logFile = m_config.getLogFilePath();
+
+    const QString device = Utils::getUsbStreamDevice();
+    if (device.isEmpty()) {
+        Utils::logError("Tascam US-122L non rilevata: impossibile avviare JACK.");
+        return false;
+    }
 
     QStringList jackdArgs;
     jackdArgs << "-vR" << "-P50" << "-t20000" << "-S";
     jackdArgs << "-dalsa";
-    jackdArgs << "-dusb_stream:0";
+    jackdArgs << "-d" + device;
     jackdArgs << "-r" + preset.sampleRate;
     jackdArgs << "-p" + preset.bufferSize;
     jackdArgs << "-n" + preset.periods;
 
-    // The launcher expects: --pidfile FILE -- jackd [args...]
+    // The launcher expects: --pidfile FILE --logfile FILE -- jackd [args...]
     QStringList launcherArgs;
-    launcherArgs << "--pidfile" << pidFile << "--" << "jackd" << jackdArgs;
+    launcherArgs << "--pidfile" << pidFile;
+    launcherArgs << "--logfile" << logFile;
+    launcherArgs << "--" << "jackd" << jackdArgs;
 
     qint64 launcherPid = 0;
     bool started = QProcess::startDetached(

@@ -94,33 +94,33 @@ QString Diagnostics::generateReport() const {
 
     report += "--- Dispositivo USB ---\n";
     report += "Modello: " + getCardModel() + "\n";
-    report += "Card:    " + getCardNumber() + "\n";
+    report += "Scheda:  " + getCardNumber() + "\n";
     report += "USB:     " + getUSBConnection() + "\n";
     report += "Firmware: " + getFirmwareVersion() + "\n";
-    report += "Sample:  24-bit\n\n";
+    report += "Campionamento: 24-bit\n\n";
 
     report += "--- ALSA ---\n";
-    report += "Driver: " + QString(Utils::checkDriverLoaded() ? "loaded" : "NOT loaded") + "\n";
-    report += "Asoundrc: " + QString(Utils::checkAsoundrc() ? "configured" : "NOT configured") + "\n\n";
+    report += "Driver: " + QString(Utils::checkDriverLoaded() ? "caricato" : "NON caricato") + "\n";
+    report += ".asoundrc: " + QString(Utils::checkAsoundrc() ? "configurato" : "NON configurato") + "\n\n";
 
     report += "--- JACK ---\n";
-    report += "Status: " + QString(isJackRunning() ? "ACTIVE" : "INACTIVE") + "\n";
+    report += "Stato: " + QString(isJackRunning() ? "ATTIVO" : "INATTIVO") + "\n";
     report += "PID: " + getJackPID() + "\n";
-    report += "Version: " + getJackVersion() + "\n";
-    report += "Sample Rate: " + getJackSamplerate() + " Hz\n";
-    report += "Buffer Size: " + getJackBuffer() + " frames\n";
+    report += "Versione: " + getJackVersion() + "\n";
+    report += "Frequenza: " + getJackSamplerate() + " Hz\n";
+    report += "Buffer: " + getJackBuffer() + " frame\n";
     report += "Xruns: " + QString::number(getXrunCount()) + "\n\n";
 
     report += "--- PipeWire ---\n";
-    report += "Bridge: " + QString(isBridgeActive() ? "active" : "inactive") + "\n";
-    report += "Sysmode: " + QString(isSysmodeActive() ? "active" : "inactive") + "\n\n";
+    report += "Bridge: " + QString(isBridgeActive() ? "attivo" : "inattivo") + "\n";
+    report += "Sysmode: " + QString(isSysmodeActive() ? "attivo" : "inattivo") + "\n\n";
 
     report += "--- MIDI ---\n";
     report += "Client: " + getMidiClientName() + "\n";
     report += "Loopback test: " + QString(testMidiLoopback() ? "OK" : "FAIL") + "\n\n";
 
-    report += "--- Auto-start ---\n";
-    report += "Enabled: " + QString(isAutostartEnabled() ? "yes" : "no") + "\n\n";
+    report += "--- Avvio automatico ---\n";
+    report += "Attivo: " + QString(isAutostartEnabled() ? "si" : "no") + "\n\n";
 
     report += "--- Configurazioni ---\n";
     report += "Settings: " + m_config.getSettingsDir() + "/settings.conf\n";
@@ -143,7 +143,7 @@ QString Diagnostics::getLogContent() const {
     QFile logFile(logPath);
 
     if (!logFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return "Log file not found or cannot be read";
+        return "File di log non trovato o non leggibile";
     }
 
     // Read last 1000 lines
@@ -168,23 +168,23 @@ QStringList Diagnostics::getLastXruns() const {
 QString Diagnostics::getCardInfo() const {
     QString info;
     info += "=== Tascam US-122L - Info Scheda ===\n\n";
-    info += "Card Number:    " + getCardNumber() + "\n";
+    info += "Numero scheda:  " + getCardNumber() + "\n";
     info += "Modello:        " + getCardModel() + "\n";
     info += "Connessione:    " + getUSBConnection() + "\n";
     info += "Firmware:       " + getFirmwareVersion() + "\n";
-    info += "Sample Width:   " + getSampleWidth() + "\n";
-    info += "Driver ALSA:    " + QString(Utils::checkDriverLoaded() ? "loaded" : "NOT loaded") + "\n";
+    info += "Campionamento:  " + getSampleWidth() + "\n";
+    info += "Driver ALSA:    " + QString(Utils::checkDriverLoaded() ? "caricato" : "NON caricato") + "\n";
     info += "Driver kernel:  " + getDriverKernelVersion() + "\n";
     info += "Device MIDI:    " + getMidiClientName() + "\n";
-    info += "JACK Server:    " + QString(isJackRunning() ? "ACTIVE" : "INACTIVE") + "\n";
+    info += "Server JACK:    " + QString(isJackRunning() ? "ATTIVO" : "INATTIVO") + "\n";
 
     if (isJackRunning()) {
-        info += "Sample Rate:    " + getJackSamplerate() + " Hz\n";
-        info += "Buffer Size:    " + getJackBuffer() + " frames\n";
+        info += "Frequenza:      " + getJackSamplerate() + " Hz\n";
+        info += "Buffer:         " + getJackBuffer() + " frame\n";
     }
 
     info += "\n=== Configurazione ===\n";
-    info += ".asoundrc: " + QString(Utils::checkAsoundrc() ? "configured" : "NOT configured") + "\n\n";
+    info += ".asoundrc: " + QString(Utils::checkAsoundrc() ? "configurato" : "NON configurato") + "\n\n";
 
     return info;
 }
@@ -194,7 +194,7 @@ QString Diagnostics::getAlsaConfigInfo() const {
     QFile configFile(configPath);
 
     if (!configFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return "Config file not found";
+        return "File di configurazione non trovato";
     }
 
     return configFile.readAll();

@@ -18,6 +18,10 @@ public:
     // Status
     bool isActive() const;
     bool sourceExists() const;
+    bool sinkExists() const;
+    // True only when both sink and source exist *and* their ALSA modules are
+    // still loaded (a name match alone can hide a broken/half-loaded state).
+    bool isFunctional() const;
     QString getSinkName() const;
     QString getSourceName() const;
 
@@ -59,6 +63,15 @@ private:
     QString getCardProfile() const;
     void setCardProfile(const QString& profile);
     bool waitForSysmodeActive(int timeoutMs = 4000);
+
+    // State validation helpers (state.conf can contain stale or invalid data)
+    bool sinkNamedExists(const QString& name) const;
+    bool sourceNamedExists(const QString& name) const;
+    bool moduleLoadedFor(const QString& needle) const;
+    bool profileAvailable(const QString& profile) const;
+    QString findFallbackSink() const;
+    QString findFallbackProfile() const;
+    bool waitForSink(const QString& name, int timeoutMs = 1500) const;
 };
 
 #endif // SYSMODE_H

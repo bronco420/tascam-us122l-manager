@@ -13,7 +13,7 @@ ConfigWidget::ConfigWidget(Config& config, QWidget* parent)
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     // Sample rate
-    QGroupBox* sampleRateGroup = new QGroupBox("Sample Rate");
+    QGroupBox* sampleRateGroup = new QGroupBox("Frequenza di campionamento");
     QFormLayout* sampleRateLayout = new QFormLayout(sampleRateGroup);
     m_sampleRate = new QComboBox();
     m_sampleRate->addItem("44100 Hz (CD)", "44100");
@@ -22,10 +22,10 @@ ConfigWidget::ConfigWidget(Config& config, QWidget* parent)
     m_sampleRate->addItem("96000 Hz (Studio)", "96000");
     int srIdx = m_sampleRate->findData(m_config.getSampleRate());
     m_sampleRate->setCurrentIndex(srIdx >= 0 ? srIdx : 0);
-    sampleRateLayout->addRow("Rate:", m_sampleRate);
+    sampleRateLayout->addRow("Frequenza:", m_sampleRate);
 
     // Buffer size
-    QGroupBox* bufferSizeGroup = new QGroupBox("Buffer Size");
+    QGroupBox* bufferSizeGroup = new QGroupBox("Dimensione buffer");
     QFormLayout* bufferSizeLayout = new QFormLayout(bufferSizeGroup);
     m_bufferSize = new QComboBox();
     m_bufferSize->addItem("64 frames (Ultra low latency)", "64");
@@ -37,18 +37,18 @@ ConfigWidget::ConfigWidget(Config& config, QWidget* parent)
     bufferSizeLayout->addRow("Buffer:", m_bufferSize);
 
     // Periods
-    QGroupBox* periodsGroup = new QGroupBox("Periods");
+    QGroupBox* periodsGroup = new QGroupBox("Periodi");
     QFormLayout* periodsLayout = new QFormLayout(periodsGroup);
     m_periods = new QSpinBox();
     m_periods->setRange(2, 4);
     m_periods->setValue(m_config.getPeriods().toInt());
-    periodsLayout->addRow("Periods:", m_periods);
+    periodsLayout->addRow("Periodi:", m_periods);
 
     // Buttons
     QHBoxLayout* buttonLayout = new QHBoxLayout();
-    m_btnSave = new QPushButton("Save Settings");
+    m_btnSave = new QPushButton("Salva impostazioni");
     m_btnSave->setProperty("type", "primary");
-    m_btnApply = new QPushButton("Apply and Restart JACK");
+    m_btnApply = new QPushButton("Applica e riavvia JACK");
     m_btnApply->setProperty("type", "ghost");
     buttonLayout->addWidget(m_btnSave);
     buttonLayout->addWidget(m_btnApply);
@@ -79,6 +79,6 @@ void ConfigWidget::onSaveClicked() {
     m_config.setBufferSize(m_bufferSize->currentData().toString());
     m_config.setPeriods(QString::number(m_periods->value()));
 
-    QMessageBox::information(this, "Settings Saved",
-        "JACK settings saved. Apply and restart JACK to activate changes.");
+    QMessageBox::information(this, "Impostazioni salvate",
+        "Impostazioni di JACK salvate. Premi 'Applica e riavvia JACK' per attivarle.");
 }
